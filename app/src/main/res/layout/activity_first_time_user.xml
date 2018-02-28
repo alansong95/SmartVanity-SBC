@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.alan.smartvanity_sbc.FirstTimeUserActivity">
+
+
+    <ImageView
+        android:id="@+id/activity_login_background_image_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/background" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="320dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
+        android:alpha="1"
+        android:elevation="2dp"
+        android:fontFamily="@font/circular"
+        android:text="We just need a few things from you to get started."
+        android:textAlignment="center"
+        android:textColor="#EEEEEE"
+        android:textSize="18dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        tools:layout_editor_absoluteX="20dp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="36dp"
+        android:elevation="2dp"
+        android:fontFamily="@font/circularbold"
+        android:text="Welcome to Smart Vanity!"
+        android:textAlignment="center"
+        android:textColor="#EEEEEE"
+        android:textSize="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+
+
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="64dp"
+        android:layout_marginStart="64dp"
+        android:background="@drawable/shape"
+        android:elevation="2dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="171dp">
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <EditText
+            android:id="@+id/activity_first_time_user_first_name"
+            android:layout_width="220dp"
+            android:layout_height="44dp"
+            android:background="@drawable/textfieldbackground"
+            android:elevation="4dp"
+            android:ems="10"
+            android:fontFamily="@font/circular"
+            android:hint="First Name"
+            android:inputType="textCapWords|textPersonName"
+            android:textColor="#4A4A4A" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <EditText
+            android:id="@+id/activity_first_time_user_last_name"
+            android:layout_width="220dp"
+            android:layout_height="44dp"
+            android:background="@drawable/textfieldbackground"
+            android:contentDescription="Password"
+            android:elevation="4dp"
+            android:ems="10"
+            android:fontFamily="@font/circular"
+            android:hint="Last Name"
+            android:inputType="textCapWords|textPersonName"
+            android:textColor="#4A4A4A" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/activity_first_time_user_get_started"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_width="0dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="82dp"
+        android:layout_marginStart="82dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/signinbuttonbackground"
+        android:elevation="8dp"
+        android:fontFamily="@font/circularbold"
+        android:text="Get Started!"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textColor="#EF5A5A"
+        android:textSize="18dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+</android.support.constraint.ConstraintLayout>
