@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -65,8 +64,6 @@ public class MainActivity extends AppCompatActivity {
         DatabaseReference myRef = database.getReference("users");
         myRef = myRef.child(uid).child("widgets");
         widgetCount = 0;
-        final TextView textView = (TextView) findViewById(R.id.text) ;
-        textView.setText("Activity Started");
         notFirst = 0;
 
         // Init for Firebase Database Video
@@ -103,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.child("updated").exists()) {
-                        textView.setText("change detected");
                         Log.d("onDataChange", "Change Detected");
                         Log.d("updated: ", dataSnapshot.child("updated").getValue().toString());
                         installWidget(dataSnapshot);
@@ -123,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void installWidget(DataSnapshot dataSnapshot) {
+        ((RelativeLayout) mainLayout).removeAllViews();
         // put data in to lists
         providerList = new ArrayList<>();
         posListL = new ArrayList<>();
@@ -141,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("install Widget", dataSnapshot.child("positionT").child("val"+i).getValue().toString());
 
         }
-
+        
         Log.d("install Widget", providerList.toString());
         Log.d("install Widget", posListL.toString());
         Log.d("install Widget", posListT.toString());
