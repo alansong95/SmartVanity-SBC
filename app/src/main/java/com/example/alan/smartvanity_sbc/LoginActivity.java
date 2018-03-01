@@ -1,7 +1,9 @@
 package com.example.alan.smartvanity_sbc;
 
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -217,8 +219,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private void gotoHomeActivity(String uid) {
         Intent homeActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
-        homeActivityIntent.putExtra("uid", uid);
-        Bundle stuff = new Bundle();
+
+        SharedPreferences id_sharedpreferences = getSharedPreferences("id", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = id_sharedpreferences.edit();
+        editor.putString("uid", uid);
+        editor.commit();
+
         startActivity(homeActivityIntent);
     }
 

@@ -4,7 +4,9 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,14 +54,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences id_sharedpreferences = getSharedPreferences("id", Context.MODE_PRIVATE);
+
         // Init for Widget
         mainLayout = (ViewGroup) findViewById(R.id.main_layout);
         mAppWidgetHost = new AppWidgetHost(this, R.id.APPWIDGET_HOST_ID);
         mAppWidgetManager = AppWidgetManager.getInstance(this);
 
         // Init for Firebase Database Widget
-        login_intent = getIntent();
-        uid = login_intent.getStringExtra("uid");
+        uid = id_sharedpreferences.getString("uid", "");
         database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("users");
         myRef = myRef.child(uid).child("widgets");
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("onDataChange vid", "Change Detected");
                         Log.d("updated vid: ", dataSnapshot.getValue().toString());
                         vid_intent.putExtra("link", dataSnapshot.getValue().toString());
-                        startActivity(vid_intent);
+                         startActivity(vid_intent);
                     } else {
                         Log.d("onDataChange vid", "Change Detected: deleted?");
                     }
@@ -138,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("install Widget", dataSnapshot.child("positionT").child("val"+i).getValue().toString());
 
         }
-        
+
         Log.d("install Widget", providerList.toString());
         Log.d("install Widget", posListL.toString());
         Log.d("install Widget", posListT.toString());
