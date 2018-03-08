@@ -1,5 +1,6 @@
-package com.example.alan.smartvanity_sbc;
+package com.example.alan.smartvanity;
 
+import android.app.Activity;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
@@ -7,7 +8,6 @@ import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -23,7 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     public static final int NUMBER_OF_WIDGET_FIELD = 5;
 
     // Variables for Firebase Database Widget
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         uid = id_sharedpreferences.getString("uid", "");
         database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("users");
-        myRef = myRef.child(uid).child("widgets");
+        myRef = myRef.child("debug");
         widgetCount = 0;
         notFirst = 0;
 
@@ -102,9 +102,8 @@ public class MainActivity extends AppCompatActivity {
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.child("updated").exists()) {
+                    if (dataSnapshot.child("info").exists()) {
                         Log.d("onDataChange", "Change Detected");
-                        Log.d("updated: ", dataSnapshot.child("updated").getValue().toString());
                         installWidget(dataSnapshot);
                     } else {
                         Log.d("onDataChange", "Change Detected: deleted?");
@@ -124,54 +123,72 @@ public class MainActivity extends AppCompatActivity {
     private void installWidget(DataSnapshot dataSnapshot) {
         ((RelativeLayout) mainLayout).removeAllViews();
         // put data in to lists
-        providerList = new ArrayList<>();
-        posListL = new ArrayList<>();
-        posListT = new ArrayList<>();
-        int widgetCount = Integer.parseInt(dataSnapshot.child("widget count").child("val").getValue().toString());
+//        providerList = new ArrayList<>();
+//        posListL = new ArrayList<>();
+//        posListT = new ArrayList<>();
+//        int widgetCount = Integer.parseInt(dataSnapshot.child("widget count").child("val").getValue().toString());
+//
+//        Log.d("install Widget", Integer.toString(widgetCount));
+//
+//        for (int i =0; i < widgetCount; i++) {
+//            Log.d("install Widget", dataSnapshot.child("selected").child("val"+i).getValue().toString());
+//            providerList.add(dataSnapshot.child("selected").child("val"+i).getValue().toString());
+//            Log.d("install Widget", dataSnapshot.child("positionL").child("val"+i).getValue().toString());
+//            posListL.add(Integer.parseInt(dataSnapshot.child("positionL").child("val"+i).getValue().toString()));
+//
+//            posListT.add(Integer.parseInt(dataSnapshot.child("positionT").child("val"+i).getValue().toString()));
+//            Log.d("install Widget", dataSnapshot.child("positionT").child("val"+i).getValue().toString());
+//
+//        }
+//
+//        Log.d("install Widget", providerList.toString());
+//        Log.d("install Widget", posListL.toString());
+//        Log.d("install Widget", posListT.toString());
 
-        Log.d("install Widget", Integer.toString(widgetCount));
-
-        for (int i =0; i < widgetCount; i++) {
-            Log.d("install Widget", dataSnapshot.child("selected").child("val"+i).getValue().toString());
-            providerList.add(dataSnapshot.child("selected").child("val"+i).getValue().toString());
-            Log.d("install Widget", dataSnapshot.child("positionL").child("val"+i).getValue().toString());
-            posListL.add(Integer.parseInt(dataSnapshot.child("positionL").child("val"+i).getValue().toString()));
-
-            posListT.add(Integer.parseInt(dataSnapshot.child("positionT").child("val"+i).getValue().toString()));
-            Log.d("install Widget", dataSnapshot.child("positionT").child("val"+i).getValue().toString());
-
-        }
-
-        Log.d("install Widget", providerList.toString());
-        Log.d("install Widget", posListL.toString());
-        Log.d("install Widget", posListT.toString());
 
 
+//        String temp;
+//        infoList = mAppWidgetManager.getInstalledProviders();
+//
+//        Log.d("install Widget", infoList.toString());
+//
+//        for (int j = 0; j < widgetCount; j++) {
+//            for (int i = 0; i < infoList.size(); i++) {
+//                temp = infoList.get(i).provider.toString();
+//
+//                if (providerList.get(j).equals(temp)) {
+//                    appWidgetInfo = infoList.get(i);
+//                    break;
+//                }
+//            }
+//
+//            AppWidgetHostView hostView = new AppWidgetHostView(this);
+//            hostView = mAppWidgetHost.createView(this, 0, appWidgetInfo);
+//            hostView.setAppWidget(0, appWidgetInfo);
+//
+//            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+//            params.leftMargin = posListL.get(j);
+//            params.topMargin = posListT.get(j);
+//
+//            mainLayout.addView(hostView, j, params);
+//    }
+        Log.d("hello8", dataSnapshot.child("id").getValue().toString());
+        int appWidgetId = Integer.parseInt(dataSnapshot.child("id").getValue().toString());
+        Log.d("hello8", dataSnapshot.child("info").getValue().toString());
+        String data = dataSnapshot.child("info").getValue().toString();
 
-        String temp;
-        infoList = mAppWidgetManager.getInstalledProviders();
+        WidgetHolder holder = WidgetHolder.deserialize(data);
+        AppWidgetProviderInfo info = AppWidgetManager
+                .getInstance(this.getApplicationContext() )
+                .getAppWidgetInfo(holder.id);
 
-        Log.d("install Widget", infoList.toString());
+        Log.d("hello7", info.provider + "");
+        AppWidgetHostView hostView = mAppWidgetHost.createView(MainActivity.this.getApplicationContext(), holder.id, info);
+        hostView.setAppWidget(appWidgetId, info);
 
-        for (int j = 0; j < widgetCount; j++) {
-            for (int i = 0; i < infoList.size(); i++) {
-                temp = infoList.get(i).provider.toString();
+        RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams( holder.width,
+                holder.height );
+        hostView.setLayoutParams(rlp);
 
-                if (providerList.get(j).equals(temp)) {
-                    appWidgetInfo = infoList.get(i);
-                    break;
-                }
-            }
-
-            AppWidgetHostView hostView = new AppWidgetHostView(this);
-            hostView = mAppWidgetHost.createView(this, 0, appWidgetInfo);
-            hostView.setAppWidget(0, appWidgetInfo);
-
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.leftMargin = posListL.get(j);
-            params.topMargin = posListT.get(j);
-
-            mainLayout.addView(hostView, j, params);
-        }
     }
 }

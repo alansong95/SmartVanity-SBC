@@ -1,4 +1,4 @@
-package com.example.alan.smartvanity_sbc;
+package com.example.alan.smartvanity;
 
 import android.content.Intent;
 import android.os.Bundle;

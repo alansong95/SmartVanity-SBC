@@ -1,4 +1,4 @@
-package com.example.alan.smartvanity_sbc;
+package com.example.alan.smartvanity;
 
 /**
  * Created by Alan on 2/21/2018.
