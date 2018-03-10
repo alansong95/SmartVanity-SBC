@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ab Smart Vanity</string>
+    <string name="app_name">Smart Vanity SBC</string>
     <string name="title_activity_login">Sign in</string>
 
     <!-- Strings related to login -->

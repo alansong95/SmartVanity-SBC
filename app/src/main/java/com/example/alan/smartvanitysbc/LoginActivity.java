@@ -1,4 +1,4 @@
-package com.example.alan.smartvanity;
+package com.example.alan.smartvanitysbc;
 
 import android.content.Context;
 import android.content.Intent;

@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:823817806464:android:8ef115163091d965",
         "android_client_info": {
-          "package_name": "com.example.alan.smartvanity"
+          "package_name": "com.example.alan.smartvanitysbc"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "823817806464-5j8l6jj7t71ah08tliu99gm4nkt2jatk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.alan.smartvanity",
+            "package_name": "com.example.alan.smartvanitysbc",
             "certificate_hash": "c8d2668ac5016f510b177da81fc92c536fec0141"
           }
         },

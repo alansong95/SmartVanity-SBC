@@ -1,4 +1,4 @@
-package com.example.alan.smartvanity;
+package com.example.alan.smartvanitysbc;
 
 /**
  * Created by Alan on 3/6/2018.

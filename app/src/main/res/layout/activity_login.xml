@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    tools:context="com.example.alan.smartvanity.LoginActivity">
+    tools:context="com.example.alan.smartvanitysbc.LoginActivity">
 
     <ImageView
         android:id="@+id/activity_login_background_image_view"
