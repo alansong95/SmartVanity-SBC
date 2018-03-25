@@ -9,9 +9,22 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.google.firebase.database.DataSnapshot;
@@ -21,8 +34,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.alan.smartvanitysbc.Constants.TAG;
 
 
 public class MainActivity extends Activity {
@@ -58,6 +75,12 @@ public class MainActivity extends Activity {
     ArrayList<AppWidgetProviderInfo> appWidgetInfoList;
     ArrayList<Integer> sbc_appWidgetIdList;
 
+    // mouse pointer
+    OverlayView mView;
+    WindowManager wm;
+    WindowManager.LayoutParams params;
+
+    int control_notFirst;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +122,95 @@ public class MainActivity extends Activity {
         vidRef = vidRef.child(uid).child("video");
         vid_notFirst = 0;
         final Intent vid_intent = new Intent(this, Video.class);
+
+        DatabaseReference controlRef = database.getReference("users");
+        controlRef = controlRef.child(uid).child("controller");
+        control_notFirst = 0;
+
+        controlRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (control_notFirst == 1) {
+
+                    String control = dataSnapshot.getValue().toString();
+
+                    if (control.substring(0, 2).equals("up")) {
+                        mView.Update(0, -33);
+                        mView.postInvalidate();
+                        Log.d("control1", "1");
+                    } else if (control.substring(0, 4).equals("send")) {
+                        Log.d("control1", "12");
+                    } else if (control.substring(0, 4).equals("left")) {
+                        mView.Update(-30, 0);
+                        mView.postInvalidate();
+                        Log.d("control1", "13");
+                    } else if (control.substring(0, 4).equals("down")) {
+                        mView.Update(0, +33);
+                        mView.postInvalidate();
+                        Log.d("control1", "14");
+                    } else if (control.substring(0, 5).equals("click")) {
+
+
+                        int loc[] = new int[2];
+                        //mView.getLocationOnScreen(loc);
+                        loc[0] = mView.x;
+                        loc[1] = mView.y;
+
+                        try {
+                            Process process = Runtime.getRuntime().exec("su");
+                            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+                            String cmd = "/system/bin/input tap " + mView.x + " " + mView.y + "\n";
+                            os.writeBytes(cmd);
+                            os.writeBytes("exit\n");
+                            os.flush();
+                            os.close();
+                            process.waitFor();
+                        } catch (Exception e) {
+                            Log.e("OKOK", e.getMessage());
+                        }
+
+
+//                        MotionEvent downEvent = MotionEvent.obtain(
+//                                SystemClock.uptimeMillis(),
+//                                SystemClock.uptimeMillis() + 100,
+//                                MotionEvent.ACTION_DOWN,
+//                                loc[0],
+//                                loc[1],
+//                                0
+//                        );
+//
+//                        MotionEvent motionEvent = MotionEvent.obtain(
+//                                SystemClock.uptimeMillis(),
+//                                SystemClock.uptimeMillis() + 100,
+//                                MotionEvent.ACTION_UP,
+//                                loc[0],
+//                                loc[1],
+//                                0
+//                        );
+//
+//                        mainLayout.dispatchTouchEvent(downEvent);
+//                        mainLayout.dispatchTouchEvent(motionEvent);
+
+                        Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
+
+
+                        Log.d("control1", "15");
+                    } else if (control.substring(0, 5).equals("right")) {
+                        mView.Update(+30, 0);
+                        mView.postInvalidate();
+                        Log.d("control1", "16");
+                    }
+                } else {
+                    control_notFirst = 1;
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         vidRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -152,6 +264,37 @@ public class MainActivity extends Activity {
             }
         });
         loadWidgets();
+
+        //toggle for system app
+        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+        myIntent.setData(Uri.parse("package:" + getPackageName()));
+        startActivityForResult(myIntent, 1234);
+
+        //toggle for system app
+        //draw MP
+    }
+
+    public void drawMP() {
+        mView = new OverlayView(this);
+        mView.setWillNotDraw(false);
+
+        params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //will cover status bar as well!!!
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.x = mView.x;
+        params.y = mView.y;
+        Log.d("DEBUG123", mView.x + "");
+        Log.d("DEBUG123", mView.y + "");
+        //params.setTitle("Cursor");
+        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.addView(mView, params);
+
+        mView.ShowCursor(true);
     }
 
     public void loadWidgets() {
@@ -232,8 +375,6 @@ public class MainActivity extends Activity {
 
     public void putWidget() {
         int appWidgetId;
-        String data;
-        WidgetHolder holder;
         AppWidgetProviderInfo info = null;
         RelativeLayout.LayoutParams params;
         AppWidgetHostView hostView;
@@ -277,6 +418,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("onActivityResult", "Started");
+        if (requestCode == 1234) {
+            drawMP();
+        }
+
         if (resultCode == RESULT_OK) {
             if (requestCode == R.integer.REQUEST_CREATE_APPWIDGET) {
                 Log.d("onActivityResult", "REQUEST_CREATE_APPWIDGET");
@@ -353,39 +498,59 @@ public class MainActivity extends Activity {
         mAppWidgetHost.stopListening();
     }
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         Log.d("foobar", requestCode + "");
         Log.d("foobar", permissions + "");
         Log.d("foobar", grantResults + "");
+    }
+}
 
-//        if (requestCode == REQUEST_PERMISSION) {
-//            // for each permission check if the user granted/denied them
-//            // you may want to group the rationale in a single dialog,
-//            // this is just an example
-//            for (int i = 0, len = permissions.length; i < len; i++) {
-//                String permission = permissions[i];
-//                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-//                    // user rejected the permission
-//                    boolean showRationale = shouldShowRequestPermissionRationale( permission );
-//                    if (! showRationale) {
-//                        // user also CHECKED "never ask again"
-//                        // you can either enable some fall back,
-//                        // disable features of your app
-//                        // or open another dialog explaining
-//                        // again the permission and directing to
-//                        // the app setting
-//                    } else if (Manifest.permission.WRITE_CONTACTS.equals(permission)) {
-//                        showRationale(permission, R.string.permission_denied_contacts);
-//                        // user did NOT check "never ask again"
-//                        // this is a good place to explain the user
-//                        // why you need the permission and ask if he wants
-//                        // to accept it (the rationale)
-//                    } else if ( /* possibly check more permissions...*/ ) {
-//                    }
-//                }
-//            }
-//        }
+
+class OverlayView extends ViewGroup {
+    private Paint mLoadPaint;
+    boolean mShowCursor;
+
+    Bitmap cursor;
+    public int x = 0,y = 0;
+
+    public void Update(int nx, int ny) {
+        x = x+nx; y = y+ny;
+    }
+    public void ShowCursor(boolean status) {
+        mShowCursor = status;
+    }
+    public boolean isCursorShown() {
+        return mShowCursor;
+    }
+
+    public OverlayView(Context context) {
+        super(context);
+        cursor = BitmapFactory.decodeResource(context.getResources(), R.drawable.mp);
+
+        mLoadPaint = new Paint();
+        mLoadPaint.setAntiAlias(true);
+        mLoadPaint.setTextSize(10);
+        mLoadPaint.setARGB(255, 255, 0, 0);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        //canvas.drawText("Hello World", 0, 0, mLoadPaint);
+        Log.d("debug13", "yo0");
+        if (mShowCursor) {
+            canvas.drawBitmap(cursor,x,y,null);
+            Log.d("debug13", "yo");
+        }
+    }
+
+    @Override
+    protected void onLayout(boolean arg0, int arg1, int arg2, int arg3, int arg4) {
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return true;
     }
 }
