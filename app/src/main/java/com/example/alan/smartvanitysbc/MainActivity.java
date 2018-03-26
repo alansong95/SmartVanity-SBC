@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
     // mouse pointer
     OverlayView mView;
     WindowManager wm;
-    WindowManager.LayoutParams params;
+    WindowManager.LayoutParams wmParams;
 
     int control_notFirst;
     int tok;
@@ -136,7 +136,6 @@ public class MainActivity extends Activity {
 
                     String control = dataSnapshot.child("controller").getValue().toString();
 
-
                     if (control.substring(0, 2).equals("up")) {
                         mView.Update(0, -10);
                         mView.postInvalidate();
@@ -186,31 +185,7 @@ public class MainActivity extends Activity {
                             Log.e("OKOK", e.getMessage());
                         }
 
-
-//                        MotionEvent downEvent = MotionEvent.obtain(
-//                                SystemClock.uptimeMillis(),
-//                                SystemClock.uptimeMillis() + 100,
-//                                MotionEvent.ACTION_DOWN,
-//                                loc[0],
-//                                loc[1],
-//                                0
-//                        );
-//
-//                        MotionEvent motionEvent = MotionEvent.obtain(
-//                                SystemClock.uptimeMillis(),
-//                                SystemClock.uptimeMillis() + 100,
-//                                MotionEvent.ACTION_UP,
-//                                loc[0],
-//                                loc[1],
-//                                0
-//                        );
-//
-//                        mainLayout.dispatchTouchEvent(downEvent);
-//                        mainLayout.dispatchTouchEvent(motionEvent);
-
                         Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
-
-
                         Log.d("control1", "15");
                     } else if (control.substring(0, 5).equals("right")) {
                         mView.Update(+10, 0);
@@ -298,7 +273,6 @@ public class MainActivity extends Activity {
 
             }
         });
-        loadWidgets();
 
         //toggle for system app
         Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
@@ -307,6 +281,8 @@ public class MainActivity extends Activity {
 
         //toggle for system app
         //draw MP
+
+        loadWidgets();
     }
 
     public void processStringInput(String stringInput) {
@@ -328,21 +304,21 @@ public class MainActivity extends Activity {
         mView = new OverlayView(this);
         mView.setWillNotDraw(false);
 
-        params = new WindowManager.LayoutParams(
+        wmParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.LEFT;
-        params.x = mView.x;
-        params.y = mView.y;
+        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
+        wmParams.x = mView.x;
+        wmParams.y = mView.y;
         Log.d("DEBUG123", mView.x + "");
         Log.d("DEBUG123", mView.y + "");
         //params.setTitle("Cursor");
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        wm.addView(mView, params);
+        wm.addView(mView, wmParams);
 
         mView.ShowCursor(true);
     }
@@ -373,8 +349,9 @@ public class MainActivity extends Activity {
             Log.d("load data", dataSnapshot.child("id").child("val"+i).getValue().toString());
             appWidgetIdList.add(Integer.parseInt(dataSnapshot.child("id").child("val"+i).getValue().toString()));
 
-
-            sbc_appWidgetIdList.add(this.mAppWidgetHost.allocateAppWidgetId());
+            int sbc_appWidgetId = this.mAppWidgetHost.allocateAppWidgetId();
+            sbc_appWidgetIdList.add(sbc_appWidgetId);
+            Log.d("load data", "SBC ID: " + sbc_appWidgetId);
         }
     }
 
@@ -384,6 +361,8 @@ public class MainActivity extends Activity {
         for (int i = 0; i < widgetCount; i++) {
             for (int j = 0; j < infoList.size(); j++) {
                 if (providerList.get(i).toString().equals(infoList.get(j).provider.toString())) {
+                    Log.d("SBCDEBUG", providerList.get(i).toString());
+                    Log.d("SBCDEBUG", infoList.get(j).provider.toString());
                     appWidgetInfoList.add(infoList.get(j));
                     break;
                 }
@@ -417,7 +396,7 @@ public class MainActivity extends Activity {
             Log.d("configureWidget", "null ended");
         } else {
             Log.d("configureWidget", "else started");
-            putWidget();
+            createWidget(data);
             Log.d("configureWidget", "else ended");
         }
         Log.d("configureWidget", "Ended");
@@ -434,7 +413,8 @@ public class MainActivity extends Activity {
         for (int i = 0; i < widgetCount; i++) {
             appWidgetId = sbc_appWidgetIdList.get(i);
 
-            info = AppWidgetManager.getInstance(this.getApplicationContext()).getAppWidgetInfo(appWidgetId);
+//            info = AppWidgetManager.getInstance(this.getApplicationContext()).getAppWidgetInfo(appWidgetId);
+            info = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
 
             hostView = mAppWidgetHost.createView(MainActivity.this.getApplicationContext(), appWidgetId, info);
             hostView.setAppWidget(appWidgetId, info);
@@ -519,21 +499,11 @@ public class MainActivity extends Activity {
 
     public void createWidget(Intent data) {
         Log.d("createWidget", "started");
-        Bundle extras = data.getExtras();
-        int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
-
-        AppWidgetProviderInfo info = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
-        AppWidgetHostView hostView = mAppWidgetHost.createView(MainActivity.this.getApplicationContext(), appWidgetId, info);
-        hostView.setAppWidget(appWidgetId, info);
-        hostView.setId(appWidgetId);
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-//        params.leftMargin = posListL.get(i);
-//        params.topMargin = posListT.get(i);
-        hostView.setId(appWidgetId);
-
-        saveData();
-        loadData();
         putWidget();
+        saveData();
+
+//        loadData();
+//        putWidget();
         //mainLayout.addView(hostView, widgetCount, params);
     }
     @Override
