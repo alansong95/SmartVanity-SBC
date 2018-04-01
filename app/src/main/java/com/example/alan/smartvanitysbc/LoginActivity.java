@@ -64,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mBluetoothAdapter.enable();
+        mBluetoothAdapter.setName("SmartVanity-Song2018");
 
         Method method;
         try {
