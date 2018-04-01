@@ -83,6 +83,8 @@ public class MainActivity extends Activity {
     int control_notFirst;
     int tok;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,103 +126,105 @@ public class MainActivity extends Activity {
         vid_notFirst = 0;
         final Intent vid_intent = new Intent(this, Video.class);
 
-        DatabaseReference controlRef = database.getReference("users");
-        controlRef = controlRef.child(uid).child("control");
-        control_notFirst = 0;
-        tok = 0;
 
-        controlRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (control_notFirst == 1) {
-
-                    String control = dataSnapshot.child("controller").getValue().toString();
-
-                    if (control.substring(0, 2).equals("up")) {
-                        mView.Update(0, -10);
-                        mView.postInvalidate();
-                        Log.d("control1", "1");
-                    } else if (control.substring(0, 3).equals("dup")) {
-                        mView.Update(0, -30);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 3).equals("tup")) {
-                        mView.Update(0, -100);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 4).equals("send")) {
-                        if (tok % 2 == 0) {
-                            String stringInput = dataSnapshot.child("StringInput").getValue().toString();
-                            Log.d("control1", "012: " + stringInput);
-                            processStringInput(stringInput);
-                            Log.d("control1", "12: " + stringInput);
-
-                        }
-                        tok++;
-
-                    } else if (control.substring(0, 4).equals("left")) {
-                        mView.Update(-10, 0);
-                        mView.postInvalidate();
-                        Log.d("control1", "13");
-                    } else if (control.substring(0, 4).equals("down")) {
-                        mView.Update(0, +10);
-                        mView.postInvalidate();
-                        Log.d("control1", "14");
-                    } else if (control.substring(0, 5).equals("click")) {
-
-
-                        int loc[] = new int[2];
-                        //mView.getLocationOnScreen(loc);
-                        loc[0] = mView.x;
-                        loc[1] = mView.y;
-
-                        try {
-                            Process process = Runtime.getRuntime().exec("su");
-                            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-                            String cmd = "/system/bin/input tap " + mView.x + " " + mView.y + "\n";
-                            os.writeBytes(cmd);
-                            os.writeBytes("exit\n");
-                            os.flush();
-                            os.close();
-                            process.waitFor();
-                        } catch (Exception e) {
-                            Log.e("OKOK", e.getMessage());
-                        }
-
-                        Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
-                        Log.d("control1", "15");
-                    } else if (control.substring(0, 5).equals("right")) {
-                        mView.Update(+10, 0);
-                        mView.postInvalidate();
-                        Log.d("control1", "16");
-                    } else if (control.substring(0, 5).equals("dleft")) {
-                        mView.Update(-30, 0);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 5).equals("tleft")) {
-                        mView.Update(-100, 0);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 5).equals("ddown")) {
-                        mView.Update(0, +30);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 5).equals("tdown")) {
-                        mView.Update(0, +100);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 6).equals("dright")) {
-                        mView.Update(+30, 0);
-                        mView.postInvalidate();
-                    } else if (control.substring(0, 6).equals("tright")) {
-                        mView.Update(+100, 0);
-                        mView.postInvalidate();
-                    }
-                } else {
-                    control_notFirst = 1;
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        // control over firebase
+//        DatabaseReference controlRef = database.getReference("users");
+//        controlRef = controlRef.child(uid).child("control");
+//        control_notFirst = 0;
+//        tok = 0;
+//
+//        controlRef.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                if (control_notFirst == 1) {
+//
+//                    String control = dataSnapshot.child("controller").getValue().toString();
+//
+//                    if (control.substring(0, 2).equals("up")) {
+//                        mView.Update(0, -10);
+//                        mView.postInvalidate();
+//                        Log.d("control1", "1");
+//                    } else if (control.substring(0, 3).equals("dup")) {
+//                        mView.Update(0, -30);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 3).equals("tup")) {
+//                        mView.Update(0, -100);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 4).equals("send")) {
+//                        if (tok % 2 == 0) {
+//                            String stringInput = dataSnapshot.child("StringInput").getValue().toString();
+//                            Log.d("control1", "012: " + stringInput);
+//                            processStringInput(stringInput);
+//                            Log.d("control1", "12: " + stringInput);
+//
+//                        }
+//                        tok++;
+//
+//                    } else if (control.substring(0, 4).equals("left")) {
+//                        mView.Update(-10, 0);
+//                        mView.postInvalidate();
+//                        Log.d("control1", "13");
+//                    } else if (control.substring(0, 4).equals("down")) {
+//                        mView.Update(0, +10);
+//                        mView.postInvalidate();
+//                        Log.d("control1", "14");
+//                    } else if (control.substring(0, 5).equals("click")) {
+//
+//
+//                        int loc[] = new int[2];
+//                        //mView.getLocationOnScreen(loc);
+//                        loc[0] = mView.x;
+//                        loc[1] = mView.y;
+//
+//                        try {
+//                            Process process = Runtime.getRuntime().exec("su");
+//                            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+//                            String cmd = "/system/bin/input tap " + mView.x + " " + mView.y + "\n";
+//                            os.writeBytes(cmd);
+//                            os.writeBytes("exit\n");
+//                            os.flush();
+//                            os.close();
+//                            process.waitFor();
+//                        } catch (Exception e) {
+//                            Log.e("OKOK", e.getMessage());
+//                        }
+//
+//                        Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
+//                        Log.d("control1", "15");
+//                    } else if (control.substring(0, 5).equals("right")) {
+//                        mView.Update(+10, 0);
+//                        mView.postInvalidate();
+//                        Log.d("control1", "16");
+//                    } else if (control.substring(0, 5).equals("dleft")) {
+//                        mView.Update(-30, 0);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 5).equals("tleft")) {
+//                        mView.Update(-100, 0);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 5).equals("ddown")) {
+//                        mView.Update(0, +30);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 5).equals("tdown")) {
+//                        mView.Update(0, +100);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 6).equals("dright")) {
+//                        mView.Update(+30, 0);
+//                        mView.postInvalidate();
+//                    } else if (control.substring(0, 6).equals("tright")) {
+//                        mView.Update(+100, 0);
+//                        mView.postInvalidate();
+//                    }
+//                } else {
+//                    control_notFirst = 1;
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
 
         vidRef.addValueEventListener(new ValueEventListener() {
             @Override

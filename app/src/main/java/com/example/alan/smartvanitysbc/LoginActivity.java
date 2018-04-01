@@ -1,5 +1,6 @@
 package com.example.alan.smartvanitysbc;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,9 +22,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.lang.reflect.Method;
+
 public class LoginActivity extends AppCompatActivity {
-
-
 
     private static String KEY_SOME_INTEGER = "KEY_SOME_INTEGER";
     private static String TAG = "SmartVanity";
@@ -41,6 +42,9 @@ public class LoginActivity extends AppCompatActivity {
 
     String uid;
 
+    private BluetoothAdapter mBluetoothAdapter;
+    BluetoothConnectionService mBluetoothConnection;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +61,21 @@ public class LoginActivity extends AppCompatActivity {
         findViews();
         setupListeners();
         populateUI();
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothAdapter.enable();
+
+        Method method;
+        try {
+            method = mBluetoothAdapter.getClass().getMethod("setScanMode", int.class, int.class);
+            method.invoke(mBluetoothAdapter,BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 0);
+            Log.e("invoke","method invoke successfully");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        mBluetoothConnection = new BluetoothConnectionService(LoginActivity.this);
 //        FragmentManager
     }
 
