@@ -5,9 +5,12 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -36,6 +39,7 @@ import com.google.gson.Gson;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,12 +87,38 @@ public class MainActivity extends Activity {
     int control_notFirst;
     int tok;
 
+    BluetoothAdapter mBluetoothAdapter;
 
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            Log.d("DEBUG123", action);
+
+
+
+            Method method;
+            try {
+                method = mBluetoothAdapter.getClass().getMethod("setScanMode", int.class, int.class);
+                method.invoke(mBluetoothAdapter,BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 0);
+                Log.e("invoke","method invoke successfully");
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            BluetoothConnectionService mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         gson = new Gson();
 
@@ -125,7 +155,6 @@ public class MainActivity extends Activity {
         vidRef = vidRef.child(uid).child("video");
         vid_notFirst = 0;
         final Intent vid_intent = new Intent(this, Video.class);
-
 
         // control over firebase
 //        DatabaseReference controlRef = database.getReference("users");
@@ -279,9 +308,9 @@ public class MainActivity extends Activity {
         });
 
         //toggle for system app
-        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-        myIntent.setData(Uri.parse("package:" + getPackageName()));
-        startActivityForResult(myIntent, 1234);
+//        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+//        myIntent.setData(Uri.parse("package:" + getPackageName()));
+//        startActivityForResult(myIntent, 1234);
 
         //toggle for system app
         //draw MP
@@ -289,43 +318,43 @@ public class MainActivity extends Activity {
         loadWidgets();
     }
 
-    public void processStringInput(String stringInput) {
-        try {
-            Process process = Runtime.getRuntime().exec("su");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            String cmd = "/system/bin/input text " + stringInput;
-            os.writeBytes(cmd);
-//            os.writeBytes("exit\n");
-            os.flush();
-            os.close();
-            process.waitFor();
-        } catch (Exception e) {
-            Log.e("OKOK", e.getMessage());
-        }
-    }
+//    public void processStringInput(String stringInput) {
+//        try {
+//            Process process = Runtime.getRuntime().exec("su");
+//            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+//            String cmd = "/system/bin/input text " + stringInput;
+//            os.writeBytes(cmd);
+////            os.writeBytes("exit\n");
+//            os.flush();
+//            os.close();
+//            process.waitFor();
+//        } catch (Exception e) {
+//            Log.e("OKOK", e.getMessage());
+//        }
+//    }
 
-    public void drawMP() {
-        mView = new OverlayView(this);
-        mView.setWillNotDraw(false);
-
-        wmParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
-                PixelFormat.TRANSLUCENT);
-        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
-        wmParams.x = mView.x;
-        wmParams.y = mView.y;
-        Log.d("DEBUG123", mView.x + "");
-        Log.d("DEBUG123", mView.y + "");
-        //params.setTitle("Cursor");
-        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        wm.addView(mView, wmParams);
-
-        mView.ShowCursor(true);
-    }
+//    public void drawMP() {
+//        mView = new OverlayView(this);
+//        mView.setWillNotDraw(false);
+//
+//        wmParams = new WindowManager.LayoutParams(
+//                WindowManager.LayoutParams.MATCH_PARENT,
+//                WindowManager.LayoutParams.MATCH_PARENT,
+//                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
+//                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+//                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
+//                PixelFormat.TRANSLUCENT);
+//        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
+//        wmParams.x = mView.x;
+//        wmParams.y = mView.y;
+//        Log.d("DEBUG123", mView.x + "");
+//        Log.d("DEBUG123", mView.y + "");
+//        //params.setTitle("Cursor");
+//        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+//        wm.addView(mView, wmParams);
+//
+//        mView.ShowCursor(true);
+//    }
 
     public void loadWidgets() {
         loadData();
@@ -453,7 +482,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("onActivityResult", "Started");
         if (requestCode == 1234) {
-            drawMP();
+            //drawMP();
         }
 
         if (resultCode == RESULT_OK) {
@@ -522,59 +551,23 @@ public class MainActivity extends Activity {
         mAppWidgetHost.stopListening();
     }
 
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        Log.d("foobar", requestCode + "");
+//        Log.d("foobar", permissions + "");
+//        Log.d("foobar", grantResults + "");
+//    }
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.d("foobar", requestCode + "");
-        Log.d("foobar", permissions + "");
-        Log.d("foobar", grantResults + "");
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mReceiver, new IntentFilter(BluetoothConnectionService.BROADCAST_FILTER));
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
     }
 }
 
-
-class OverlayView extends ViewGroup {
-    private Paint mLoadPaint;
-    boolean mShowCursor;
-
-    Bitmap cursor;
-    public int x = 0,y = 0;
-
-    public void Update(int nx, int ny) {
-        x = x+nx; y = y+ny;
-    }
-    public void ShowCursor(boolean status) {
-        mShowCursor = status;
-    }
-    public boolean isCursorShown() {
-        return mShowCursor;
-    }
-
-    public OverlayView(Context context) {
-        super(context);
-        cursor = BitmapFactory.decodeResource(context.getResources(), R.drawable.mp);
-
-        mLoadPaint = new Paint();
-        mLoadPaint.setAntiAlias(true);
-        mLoadPaint.setTextSize(10);
-        mLoadPaint.setARGB(255, 255, 0, 0);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        //canvas.drawText("Hello World", 0, 0, mLoadPaint);
-        Log.d("debug13", "yo0");
-        if (mShowCursor) {
-            canvas.drawBitmap(cursor,x,y,null);
-            Log.d("debug13", "yo");
-        }
-    }
-
-    @Override
-    protected void onLayout(boolean arg0, int arg1, int arg2, int arg3, int arg4) {
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return true;
-    }
-}

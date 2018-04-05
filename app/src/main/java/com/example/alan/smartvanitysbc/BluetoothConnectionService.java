@@ -6,8 +6,15 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.PixelFormat;
+import android.net.Uri;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.WindowManager;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +26,8 @@ import java.util.UUID;
  */
 
 public class BluetoothConnectionService {
+    public static final String BROADCAST_FILTER = "BluetoothConection_broadcast_receiver_intent_filter";
+
     private static final String TAG = "BluetoothConnectionServ";
 
     private static final String appName = "SmartVanity-SBC";
@@ -34,13 +43,20 @@ public class BluetoothConnectionService {
     private ConnectThread mConnectThread;
     private BluetoothDevice mmDevice;
     private UUID deviceUUID;
-    ProgressDialog mProgressDialog;
 
     private ConnectedThread mConnectedThread;
+
 
     public BluetoothConnectionService(Context context) {
         mContext = context;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+//        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+//        myIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+//        LoginActivity.class.startActivityForResult(myIntent, 1234);
+
+
+        drawMP();
         start();
     }
 
@@ -172,7 +188,29 @@ public class BluetoothConnectionService {
         }
     }
 
+    public synchronized void endConnection() {
+   /* if (mConnectedThread.mmSocket.isConnected()){
+        mConnectedThread.interrupt();
+        mConnectThread.cancel();
 
+    }*/
+
+        if (mConnectThread != null) {
+            mConnectThread.cancel();
+            mConnectThread = null;
+        }
+
+        if (mConnectedThread != null) {
+            mConnectedThread.interrupt();
+            mConnectedThread.cancel();
+            mConnectedThread = null;
+        }
+
+        if (mInsecureAcceptThread != null) {
+            mInsecureAcceptThread.cancel();
+            mInsecureAcceptThread = null;
+        }
+    }
 
     /**
      * Start the chat service. Specifically start AcceptThread to begin a
@@ -198,25 +236,15 @@ public class BluetoothConnectionService {
      Then ConnectThread starts and attempts to make a connection with the other devices AcceptThread.
      **/
 
-    public void startClient(BluetoothDevice device, UUID uuid){
-        Log.d(TAG, "startClient: Started.");
-
-        //initprogress dialog
-        mProgressDialog = ProgressDialog.show(mContext,"Connecting Bluetooth"
-                ,"Please Wait...",true);
-
-        mConnectThread = new ConnectThread(device, uuid);
-        mConnectThread.start();
-    }
 
     /**
      Finally the ConnectedThread which is responsible for maintaining the BTConnection, Sending the data, and
      receiving incoming data through input/output streams respectively.
      **/
     private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
+        private BluetoothSocket mmSocket;
+        private InputStream mmInStream;
+        private OutputStream mmOutStream;
 
         public ConnectedThread(BluetoothSocket socket) {
             Log.d(TAG, "ConnectedThread: Starting.");
@@ -226,11 +254,6 @@ public class BluetoothConnectionService {
             OutputStream tmpOut = null;
 
             //dismiss the progressdialog when connection is established
-            try{
-                mProgressDialog.dismiss();
-            }catch (NullPointerException e){
-                e.printStackTrace();
-            }
 
 
             try {
@@ -245,6 +268,7 @@ public class BluetoothConnectionService {
         }
 
         public void run(){
+            boolean breakLoop = false;
             byte[] buffer = new byte[1024];  // buffer store for the stream
 
             int bytes; // bytes returned from read()
@@ -252,12 +276,126 @@ public class BluetoothConnectionService {
             // Keep listening to the InputStream until an exception occurs
             while (true) {
                 // Read from the InputStream
+                if (breakLoop) {
+                    break;
+                }
                 try {
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
                     Log.d(TAG, "InputStream: " + incomingMessage);
+
+                    switch (incomingMessage) {
+                        case "!01":
+                            mView.Update(-10, 0);
+                            mView.postInvalidate();
+                            break;
+                        case "!02":
+                            mView.Update(-30, 0);
+                            mView.postInvalidate();
+                            break;
+                        case "!03":
+                            mView.Update(-100, 0);
+                            mView.postInvalidate();
+                            break;
+                        case "!04":
+                            mView.Update(10, 0);
+                            mView.postInvalidate();
+                            break;
+                        case "!05":
+                            mView.Update(30, 0);
+                            mView.postInvalidate();
+                            break;
+                        case "!06":
+                            mView.Update(100, 0);
+                            mView.postInvalidate();
+                            break;
+                        case "!07":
+                            mView.Update(0, -10);
+                            mView.postInvalidate();
+                            break;
+                        case "!08":
+                            mView.Update(0, -30);
+                            mView.postInvalidate();
+                            break;
+                        case "!09":
+                            mView.Update(0, -100);
+                            mView.postInvalidate();
+                            break;
+                        case "!10":
+                            mView.Update(0, 10);
+                            mView.postInvalidate();
+                            break;
+                        case "!11":
+                            mView.Update(0, 30);
+                            mView.postInvalidate();
+                            break;
+                        case "!12":
+                            mView.Update(0, 100);
+                            mView.postInvalidate();
+                            break;
+                        case "!13":
+                            int loc[] = new int[2];
+                            //mView.getLocationOnScreen(loc);
+                            loc[0] = mView.x;
+                            loc[1] = mView.y;
+
+                            try {
+                                Process process = Runtime.getRuntime().exec("su");
+                                DataOutputStream os = new DataOutputStream(process.getOutputStream());
+                                String cmd = "/system/bin/input tap " + mView.x + " " + mView.y + "\n";
+                                os.writeBytes(cmd);
+                                os.writeBytes("exit\n");
+                                os.flush();
+                                os.close();
+                                process.waitFor();
+                            } catch (Exception e) {
+                                Log.e("OKOK", e.getMessage());
+                            }
+
+                            Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
+                            break;
+                        case "!14":
+                            endConnection();
+
+                            Intent i = new Intent(BROADCAST_FILTER);
+                            i.putExtra("connection_eneded", true);
+                            mContext.sendBroadcast(i);
+                            breakLoop = true;
+
+                            try {
+                                mmSocket.close();
+
+                            } catch (Exception e) {
+
+                            }
+                            mmSocket = null;
+
+                            try {
+                                mmInStream.close();
+
+                            } catch (Exception e) {
+
+                            }
+                            mmInStream = null;
+
+                            try {
+                                mmOutStream.close();
+
+                            } catch (Exception e) {
+
+                            }
+                            mmOutStream = null;
+
+                            wm.removeView(mView);
+
+                            break;
+                        default:
+                            processStringInput(incomingMessage);
+                    }
+
+
                 } catch (IOException e) {
-                    Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
+                    Log.e(TAG, "read: Error reading Input Stream. " + e.getMessage() );
                     break;
                 }
             }
@@ -306,6 +444,47 @@ public class BluetoothConnectionService {
         mConnectedThread.write(out);
     }
 
+    OverlayView mView;
+    WindowManager.LayoutParams wmParams;
+    WindowManager wm;
+
+    public void drawMP() {
+        mView = new OverlayView(mContext);
+        mView.setWillNotDraw(false);
+
+        wmParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
+                PixelFormat.TRANSLUCENT);
+        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
+        wmParams.x = mView.x;
+        wmParams.y = mView.y;
+        Log.d("DEBUG123", mView.x + "");
+        Log.d("DEBUG123", mView.y + "");
+        //params.setTitle("Cursor");
+        wm = (WindowManager) mContext.getSystemService(mContext.WINDOW_SERVICE);
+        wm.addView(mView, wmParams);
+
+        mView.ShowCursor(true);
+    }
+
+    public void processStringInput(String stringInput) {
+        try {
+            Process process = Runtime.getRuntime().exec("su");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+            String cmd = "/system/bin/input text " + stringInput;
+            os.writeBytes(cmd);
+//            os.writeBytes("exit\n");
+            os.flush();
+            os.close();
+            process.waitFor();
+        } catch (Exception e) {
+            Log.e("OKOK", e.getMessage());
+        }
+    }
 }
 
 

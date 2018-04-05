@@ -46,6 +46,8 @@ public class LoginActivity extends AppCompatActivity {
     BluetoothConnectionService mBluetoothConnection;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

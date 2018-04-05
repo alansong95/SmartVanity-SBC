@@ -16,6 +16,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions "tier"
+    productFlavors{
+        x86 {
+            dimension "tier"
+            ndk {
+                abiFilter "x86"
+            }
+        }
+        armv7a {
+            dimension "tier"
+            ndk {
+                abiFilter "armeabi-v7a"
+            }
+        }
+        fat  ///This build contain multi architecture binary
+    }
 }
 
 dependencies {
