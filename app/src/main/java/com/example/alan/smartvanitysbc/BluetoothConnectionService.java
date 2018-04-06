@@ -1,6 +1,6 @@
 package com.example.alan.smartvanitysbc;
 
-import android.app.ProgressDialog;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
@@ -8,8 +8,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
-import android.net.Uri;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
@@ -51,10 +49,10 @@ public class BluetoothConnectionService {
         mContext = context;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        Activity activity = (Activity) context;
 //        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
 //        myIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
-//        LoginActivity.class.startActivityForResult(myIntent, 1234);
-
+//        activity.startActivityForResult(myIntent, 1234);
 
         drawMP();
         start();

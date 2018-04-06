@@ -12,22 +12,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.provider.Settings;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.google.firebase.database.DataSnapshot;
@@ -37,13 +25,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.example.alan.smartvanitysbc.Constants.TAG;
 
 
 public class MainActivity extends Activity {
@@ -109,7 +93,6 @@ public class MainActivity extends Activity {
             }
 
             BluetoothConnectionService mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
-
         }
     };
 
@@ -156,105 +139,6 @@ public class MainActivity extends Activity {
         vid_notFirst = 0;
         final Intent vid_intent = new Intent(this, Video.class);
 
-        // control over firebase
-//        DatabaseReference controlRef = database.getReference("users");
-//        controlRef = controlRef.child(uid).child("control");
-//        control_notFirst = 0;
-//        tok = 0;
-//
-//        controlRef.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                if (control_notFirst == 1) {
-//
-//                    String control = dataSnapshot.child("controller").getValue().toString();
-//
-//                    if (control.substring(0, 2).equals("up")) {
-//                        mView.Update(0, -10);
-//                        mView.postInvalidate();
-//                        Log.d("control1", "1");
-//                    } else if (control.substring(0, 3).equals("dup")) {
-//                        mView.Update(0, -30);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 3).equals("tup")) {
-//                        mView.Update(0, -100);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 4).equals("send")) {
-//                        if (tok % 2 == 0) {
-//                            String stringInput = dataSnapshot.child("StringInput").getValue().toString();
-//                            Log.d("control1", "012: " + stringInput);
-//                            processStringInput(stringInput);
-//                            Log.d("control1", "12: " + stringInput);
-//
-//                        }
-//                        tok++;
-//
-//                    } else if (control.substring(0, 4).equals("left")) {
-//                        mView.Update(-10, 0);
-//                        mView.postInvalidate();
-//                        Log.d("control1", "13");
-//                    } else if (control.substring(0, 4).equals("down")) {
-//                        mView.Update(0, +10);
-//                        mView.postInvalidate();
-//                        Log.d("control1", "14");
-//                    } else if (control.substring(0, 5).equals("click")) {
-//
-//
-//                        int loc[] = new int[2];
-//                        //mView.getLocationOnScreen(loc);
-//                        loc[0] = mView.x;
-//                        loc[1] = mView.y;
-//
-//                        try {
-//                            Process process = Runtime.getRuntime().exec("su");
-//                            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-//                            String cmd = "/system/bin/input tap " + mView.x + " " + mView.y + "\n";
-//                            os.writeBytes(cmd);
-//                            os.writeBytes("exit\n");
-//                            os.flush();
-//                            os.close();
-//                            process.waitFor();
-//                        } catch (Exception e) {
-//                            Log.e("OKOK", e.getMessage());
-//                        }
-//
-//                        Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
-//                        Log.d("control1", "15");
-//                    } else if (control.substring(0, 5).equals("right")) {
-//                        mView.Update(+10, 0);
-//                        mView.postInvalidate();
-//                        Log.d("control1", "16");
-//                    } else if (control.substring(0, 5).equals("dleft")) {
-//                        mView.Update(-30, 0);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 5).equals("tleft")) {
-//                        mView.Update(-100, 0);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 5).equals("ddown")) {
-//                        mView.Update(0, +30);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 5).equals("tdown")) {
-//                        mView.Update(0, +100);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 6).equals("dright")) {
-//                        mView.Update(+30, 0);
-//                        mView.postInvalidate();
-//                    } else if (control.substring(0, 6).equals("tright")) {
-//                        mView.Update(+100, 0);
-//                        mView.postInvalidate();
-//                    }
-//                } else {
-//                    control_notFirst = 1;
-//                }
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-
         vidRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -285,9 +169,9 @@ public class MainActivity extends Activity {
                 if (notFirst == 1) {
                     if (dataSnapshot.child("updated").exists()) {
                         Log.d("onDataChange", "Change Detected");
+
                         loadDataFromDatabase(dataSnapshot);
                         examineData();
-
                         bindWidgets();
 
                         //putWidget();
@@ -316,6 +200,10 @@ public class MainActivity extends Activity {
         //draw MP
 
         loadWidgets();
+    }
+
+    public void newWidgets() {
+
     }
 
 //    public void processStringInput(String stringInput) {
@@ -419,6 +307,7 @@ public class MainActivity extends Activity {
     private void configureWidget(Intent data) {
         Bundle extras = data.getExtras();
         int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
+        Log.d("DEBUG123", "pikachu: " + appWidgetId);
         AppWidgetProviderInfo newInfo = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
         if (newInfo.configure != null) {
             Log.d("configureWidget", "null");
@@ -449,15 +338,14 @@ public class MainActivity extends Activity {
 //            info = AppWidgetManager.getInstance(this.getApplicationContext()).getAppWidgetInfo(appWidgetId);
             info = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
 
-            hostView = mAppWidgetHost.createView(MainActivity.this.getApplicationContext(), appWidgetId, info);
-            hostView.setAppWidget(appWidgetId, info);
+            hostView = mAppWidgetHost.createView(MainActivity.this, appWidgetId, info);
+//            hostView.setAppWidget(appWidgetId, info);
 
             params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             params.leftMargin = posListL.get(i);
             params.topMargin = posListT.get(i);
 
-            hostView.setId(appWidgetId);
-
+//            hostView.setId(appWidgetId);
             mainLayout.addView(hostView, i, params);
         }
     }
@@ -468,7 +356,7 @@ public class MainActivity extends Activity {
         for (int i = 0; i < widgetCount; i++) {
             intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_BIND);
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, sbc_appWidgetIdList.get(i));
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, providerList.get(i));
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, appWidgetInfoList.get(i).provider);
             //intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, appWidgetInfoList.get(i).getProfile());
             startActivityForResult(intent, R.integer.REQUEST_BIND_APPWIDGET);
 
@@ -481,14 +369,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("onActivityResult", "Started");
-        if (requestCode == 1234) {
-            //drawMP();
-        }
-
         if (resultCode == RESULT_OK) {
             if (requestCode == R.integer.REQUEST_CREATE_APPWIDGET) {
                 Log.d("onActivityResult", "REQUEST_CREATE_APPWIDGET");
-                Log.d("pika", "3");
+                Log.d("pika", "3: ");
                 createWidget(data);
                 Log.d("onActivityResult", "REQUEST_CREATE_APPWIDGET END");
             } else if (requestCode == R.integer.REQUEST_BIND_APPWIDGET) {
@@ -532,6 +416,9 @@ public class MainActivity extends Activity {
 
     public void createWidget(Intent data) {
         Log.d("createWidget", "started");
+        Log.d("DEBUG123", sbc_appWidgetIdList + "");
+        Log.d("DEBUG123", providerList + "");
+
         putWidget();
         saveData();
 
