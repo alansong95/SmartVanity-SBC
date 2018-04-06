@@ -170,6 +170,8 @@ public class MainActivity extends Activity {
                     if (dataSnapshot.child("updated").exists()) {
                         Log.d("onDataChange", "Change Detected");
 
+                        mainLayout.removeAllViews();
+
                         loadDataFromDatabase(dataSnapshot);
                         examineData();
                         bindWidgets();
@@ -200,10 +202,6 @@ public class MainActivity extends Activity {
         //draw MP
 
         loadWidgets();
-    }
-
-    public void newWidgets() {
-
     }
 
 //    public void processStringInput(String stringInput) {
@@ -354,16 +352,35 @@ public class MainActivity extends Activity {
     public void bindWidgets() {
         Intent intent;
         for (int i = 0; i < widgetCount; i++) {
-            intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_BIND);
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, sbc_appWidgetIdList.get(i));
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, appWidgetInfoList.get(i).provider);
-            //intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, appWidgetInfoList.get(i).getProfile());
-            startActivityForResult(intent, R.integer.REQUEST_BIND_APPWIDGET);
+//            intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_BIND);
+//            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, sbc_appWidgetIdList.get(i));
+//            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, appWidgetInfoList.get(i).provider);
+//            //intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, appWidgetInfoList.get(i).getProfile());
+//            startActivityForResult(intent, R.integer.REQUEST_BIND_APPWIDGET);
 
-//            boolean temp = mAppWidgetManager.bindAppWidgetIdIfAllowed(sbc_appWidgetIdList.get(i), providerList.get(i));
+            boolean temp = mAppWidgetManager.bindAppWidgetIdIfAllowed(sbc_appWidgetIdList.get(i), appWidgetInfoList.get(i).provider);
 //            Log.d("load data", temp + "");
+
+            configureWidget2(sbc_appWidgetIdList.get(i), i);
         }
 
+    }
+
+    public void configureWidget2(int appWidgetId, int index) {
+        Log.d("DEBUG123", "pikachu: " + appWidgetId);
+        AppWidgetProviderInfo newInfo = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
+        if (newInfo.configure != null) {
+            Log.d("configureWidget", "null");
+            Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE);
+            intent.setComponent(newInfo.configure);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            startActivityForResult(intent, R.integer.REQUEST_CREATE_APPWIDGET);
+            Log.d("configureWidget", "null ended");
+        } else {
+            Log.d("configureWidget", "else started");
+            Log.d("configureWidget", "else ended");
+        }
+        Log.d("configureWidget", "Ended");
     }
 
     @Override
@@ -381,6 +398,10 @@ public class MainActivity extends Activity {
             }
         } else if (resultCode == RESULT_CANCELED && data != null) {
             Log.d("onActivityResult", "RESULT_CANCELED");
+            int appWidgetId = data.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
+            if (appWidgetId != -1) {
+                mAppWidgetHost.deleteAppWidgetId(appWidgetId);
+            }
         }
         Log.d("onActivityResult", "Ended");
     }
@@ -419,7 +440,36 @@ public class MainActivity extends Activity {
         Log.d("DEBUG123", sbc_appWidgetIdList + "");
         Log.d("DEBUG123", providerList + "");
 
-        putWidget();
+        Bundle extras = data.getExtras();
+        int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
+
+        Log.d("DEBUG234", appWidgetId + "");
+
+        AppWidgetProviderInfo info = null;
+        RelativeLayout.LayoutParams params;
+        AppWidgetHostView hostView;
+
+        info = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
+
+        Log.d("DEBUG234", info + "");
+
+        hostView = mAppWidgetHost.createView(this, appWidgetId, info);
+            hostView.setAppWidget(appWidgetId, info);
+
+        int index = -1;
+        for (int i = 0; i < widgetCount; i++) {
+            if (sbc_appWidgetIdList.get(i) == appWidgetId) {
+                index = i;
+            }
+        }
+
+        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = posListL.get(index);
+        params.topMargin = posListT.get(index);
+            hostView.setId(appWidgetId);
+
+        mainLayout.addView(hostView, params);
+
         saveData();
 
 //        loadData();
@@ -438,12 +488,12 @@ public class MainActivity extends Activity {
         mAppWidgetHost.stopListening();
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        Log.d("foobar", requestCode + "");
-//        Log.d("foobar", permissions + "");
-//        Log.d("foobar", grantResults + "");
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.d("foobar", requestCode + "");
+        Log.d("foobar", permissions + "");
+        Log.d("foobar", grantResults + "");
+    }
 
     @Override
     protected void onResume() {
