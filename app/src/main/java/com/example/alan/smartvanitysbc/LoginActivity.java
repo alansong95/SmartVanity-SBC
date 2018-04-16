@@ -42,11 +42,8 @@ public class LoginActivity extends AppCompatActivity {
 
     String uid;
 
-    private BluetoothAdapter mBluetoothAdapter;
-    BluetoothConnectionService mBluetoothConnection;
-
-
-
+//    private BluetoothAdapter mBluetoothAdapter;
+//    BluetoothConnectionService mBluetoothConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,21 +61,21 @@ public class LoginActivity extends AppCompatActivity {
         setupListeners();
         populateUI();
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBluetoothAdapter.enable();
-        mBluetoothAdapter.setName("SmartVanity-Song2018");
-
-        Method method;
-        try {
-            method = mBluetoothAdapter.getClass().getMethod("setScanMode", int.class, int.class);
-            method.invoke(mBluetoothAdapter,BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 0);
-            Log.e("invoke","method invoke successfully");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
-        mBluetoothConnection = new BluetoothConnectionService(LoginActivity.this);
+//        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//        mBluetoothAdapter.enable();
+//        mBluetoothAdapter.setName("SmartVanity-Song2018");
+//
+//        Method method;
+//        try {
+//            method = mBluetoothAdapter.getClass().getMethod("setScanMode", int.class, int.class);
+//            method.invoke(mBluetoothAdapter,BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 0);
+//            Log.e("invoke","method invoke successfully");
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//
+//        mBluetoothConnection = new BluetoothConnectionService(LoginActivity.this);
 //        FragmentManager
     }
 

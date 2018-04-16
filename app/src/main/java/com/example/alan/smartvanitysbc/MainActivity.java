@@ -12,8 +12,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.PixelFormat;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
@@ -25,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
+import java.io.DataOutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,6 +144,101 @@ public class MainActivity extends Activity {
         vid_notFirst = 0;
         final Intent vid_intent = new Intent(this, Video.class);
 
+
+        DatabaseReference controlRef = database.getReference("users");
+        controlRef = controlRef.child(uid).child("control");
+        control_notFirst = 0;
+        tok = 0;
+
+
+        controlRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (control_notFirst == 1) {
+
+                    String control = dataSnapshot.child("controller").getValue().toString();
+
+                    if (control.substring(0, 3).equals("@01")) {
+                        mView.Update(-10, 0);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@02")) {
+                        mView.Update(-30, 0);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@03")) {
+                        mView.Update(-100, 0);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@04")) {
+                        mView.Update(10, 0);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@05")) {
+                        mView.Update(30, 0);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@06")) {
+                        mView.Update(100, 0);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@07")) {
+                        mView.Update(0, -10);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@08")) {
+                        mView.Update(0, -30);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@09")) {
+                        mView.Update(0, -100);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@10")) {
+                        mView.Update(0, 10);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@11")) {
+                        mView.Update(0, 30);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@12")) {
+                        mView.Update(0, 100);
+                        mView.postInvalidate();
+                    } else if (control.substring(0, 3).equals("@13")) {
+
+                        int loc[] = new int[2];
+                        //mView.getLocationOnScreen(loc);
+                        loc[0] = mView.x;
+                        loc[1] = mView.y;
+
+                        try {
+                            Process process = Runtime.getRuntime().exec("su");
+                            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+                            String cmd = "/system/bin/input tap " + mView.x + " " + mView.y + "\n";
+                            os.writeBytes(cmd);
+                            os.writeBytes("exit\n");
+                            os.flush();
+                            os.close();
+                            process.waitFor();
+                        } catch (Exception e) {
+                            Log.e("OKOK", e.getMessage());
+                        }
+
+                        Log.d("Debug", "x: " + loc[0] + ", y: " + loc[1]);
+                        Log.d("control1", "15");
+
+                    } else if (control.substring(0, 3).equals("@14")) {
+                        if (tok % 2 == 0) {
+                            String stringInput = dataSnapshot.child("input").getValue().toString();
+                            Log.d("control1", "012: " + stringInput);
+                            processStringInput(stringInput);
+                            Log.d("control1", "12: " + stringInput);
+
+                        }
+                        tok++;
+                    }
+                } else {
+                    control_notFirst = 1;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
         vidRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -200,26 +300,51 @@ public class MainActivity extends Activity {
         //draw MP
 
         loadWidgets();
+
+
+//        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+//        myIntent.setData(Uri.parse("package:" + getPackageName()));
+//        startActivityForResult(myIntent, 1234);
+        drawMP();
     }
 
-    public void newWidgets() {
+    public void drawMP() {
+        mView = new OverlayView(this);
+        mView.setWillNotDraw(false);
 
+        wmParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
+                PixelFormat.TRANSLUCENT);
+        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
+        wmParams.x = mView.x;
+        wmParams.y = mView.y;
+        Log.d("DEBUG123", mView.x + "");
+        Log.d("DEBUG123", mView.y + "");
+        //params.setTitle("Cursor");
+        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.addView(mView, wmParams);
+
+        mView.ShowCursor(true);
     }
 
-//    public void processStringInput(String stringInput) {
-//        try {
-//            Process process = Runtime.getRuntime().exec("su");
-//            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-//            String cmd = "/system/bin/input text " + stringInput;
-//            os.writeBytes(cmd);
-////            os.writeBytes("exit\n");
-//            os.flush();
-//            os.close();
-//            process.waitFor();
-//        } catch (Exception e) {
-//            Log.e("OKOK", e.getMessage());
-//        }
-//    }
+    public void processStringInput(String stringInput) {
+        try {
+            Process process = Runtime.getRuntime().exec("su");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+            String cmd = "/system/bin/input text " + stringInput;
+            os.writeBytes(cmd);
+//            os.writeBytes("exit\n");
+            os.flush();
+            os.close();
+            process.waitFor();
+        } catch (Exception e) {
+            Log.e("OKOK", e.getMessage());
+        }
+    }
 
 //    public void drawMP() {
 //        mView = new OverlayView(this);
