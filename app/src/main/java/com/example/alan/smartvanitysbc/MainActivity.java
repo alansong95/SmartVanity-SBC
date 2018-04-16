@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -77,6 +78,11 @@ public class MainActivity extends Activity {
     int tok;
 
     BluetoothAdapter mBluetoothAdapter;
+
+    int volume;
+    int tok2;
+
+    AudioManager audioManager;
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -149,7 +155,8 @@ public class MainActivity extends Activity {
         controlRef = controlRef.child(uid).child("control");
         control_notFirst = 0;
         tok = 0;
-
+        tok2 = 0;
+        volume = 5;
 
         controlRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -226,6 +233,15 @@ public class MainActivity extends Activity {
 
                         }
                         tok++;
+                    } else if (control.substring(0, 3).equals("@15")) {
+                        if (tok2 % 2 == 0) {
+                            volume = Integer.parseInt(dataSnapshot.child("sound").getValue().toString());
+                            Log.d("DEBUG345", "volume: " + volume);
+
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 10 * volume), 0);
+
+                        }
+                        tok2++;
                     }
                 } else {
                     control_notFirst = 1;
@@ -306,6 +322,11 @@ public class MainActivity extends Activity {
 //        myIntent.setData(Uri.parse("package:" + getPackageName()));
 //        startActivityForResult(myIntent, 1234);
         drawMP();
+
+
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        Log.d("DEBUG345", audioManager.isVolumeFixed() + "");
+
     }
 
     public void drawMP() {
