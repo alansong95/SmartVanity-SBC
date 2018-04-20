@@ -61,7 +61,6 @@ public class MainActivity extends Activity {
     AppWidgetManager mAppWidgetManager;
     AppWidgetHost mAppWidgetHost;
 
-
     int widgetCount;
     ArrayList<ComponentName> providerList;
     ArrayList<String> providerStringList;

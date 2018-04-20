@@ -1,7 +1,11 @@
 package com.example.alan.smartvanitysbc;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubeBaseActivity;
@@ -9,6 +13,13 @@ import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.io.DataOutputStream;
 
 public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener {
 
@@ -21,6 +32,10 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
     private MyPlaybackEventListener playbackEventListener;
 
     int start;
+
+    private FirebaseDatabase database;
+    String uid;
+    int control_notFirst;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +52,41 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
         video = main_intent.getStringExtra("link");
 
         start = 0;
+
+
+
+        SharedPreferences id_sharedpreferences = getSharedPreferences("id", Context.MODE_PRIVATE);
+
+        database = FirebaseDatabase.getInstance();
+        uid = id_sharedpreferences.getString("uid", "");
+
+        DatabaseReference controlRef = database.getReference("users");
+        controlRef = controlRef.child(uid).child("control");
+
+
+        control_notFirst = 0;
+
+        controlRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (control_notFirst == 1) {
+                    String control = dataSnapshot.child("controller").getValue().toString();
+
+                    if (control.substring(0, 3).equals("@16")) {
+                        finish();
+                    }
+                } else {
+                    control_notFirst = 1;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     @Override
