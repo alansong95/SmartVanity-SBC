@@ -17,10 +17,12 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AbsoluteLayout;
 import android.widget.RelativeLayout;
 
 import com.google.firebase.database.DataSnapshot;
@@ -69,6 +71,9 @@ public class MainActivity extends Activity {
     ArrayList<AppWidgetProviderInfo> appWidgetInfoList;
     ArrayList<Integer> sbc_appWidgetIdList;
 
+    ArrayList<Integer> rowSizeList;
+    ArrayList<Integer> colSizeList;
+
     // mouse pointer
     OverlayView mView;
     WindowManager wm;
@@ -83,6 +88,8 @@ public class MainActivity extends Activity {
     int tok2;
 
     AudioManager audioManager;
+
+    int width, height;
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -129,6 +136,10 @@ public class MainActivity extends Activity {
         appWidgetInfoList = new ArrayList<>();
         sbc_appWidgetIdList = new ArrayList<>();
         providerStringList = new ArrayList<>();
+
+
+        rowSizeList = new ArrayList<>();
+        colSizeList = new ArrayList<>();
 
         // Init for Widget
         mainLayout = (ViewGroup) findViewById(R.id.main_layout);
@@ -325,7 +336,16 @@ public class MainActivity extends Activity {
 
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        Log.d("DEBUG345", audioManager.isVolumeFixed() + "");
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        height = displayMetrics.heightPixels;
+        width = displayMetrics.widthPixels;
+
+        Log.d("DEBUG456", "height: " + height);
+        Log.d("DEBUG456", "width: " + width);
+
+
 
     }
 
@@ -416,6 +436,13 @@ public class MainActivity extends Activity {
             Log.d("load data", dataSnapshot.child("id").child("val"+i).getValue().toString());
             appWidgetIdList.add(Integer.parseInt(dataSnapshot.child("id").child("val"+i).getValue().toString()));
 
+
+            Log.d("load data", dataSnapshot.child("rowSize").child("val"+i).getValue().toString());
+            rowSizeList.add(Integer.parseInt(dataSnapshot.child("rowSize").child("val"+i).getValue().toString()));
+
+            Log.d("load data", dataSnapshot.child("colSize").child("val"+i).getValue().toString());
+            colSizeList.add(Integer.parseInt(dataSnapshot.child("colSize").child("val"+i).getValue().toString()));
+
             int sbc_appWidgetId = this.mAppWidgetHost.allocateAppWidgetId();
             sbc_appWidgetIdList.add(sbc_appWidgetId);
             Log.d("load data", "SBC ID: " + sbc_appWidgetId);
@@ -473,7 +500,7 @@ public class MainActivity extends Activity {
     public void putWidget() {
         int appWidgetId;
         AppWidgetProviderInfo info = null;
-        RelativeLayout.LayoutParams params;
+        AbsoluteLayout.LayoutParams params;
         AppWidgetHostView hostView;
 
         mainLayout.removeAllViews();
@@ -487,9 +514,7 @@ public class MainActivity extends Activity {
             hostView = mAppWidgetHost.createView(MainActivity.this, appWidgetId, info);
 //            hostView.setAppWidget(appWidgetId, info);
 
-            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.leftMargin = posListL.get(i);
-            params.topMargin = posListT.get(i);
+            params = new AbsoluteLayout.LayoutParams(rowSizeList.get(i), colSizeList.get(i), posListL.get(i), posListT.get(i));
 
 //            hostView.setId(appWidgetId);
             mainLayout.addView(hostView, i, params);
@@ -538,6 +563,10 @@ public class MainActivity extends Activity {
                 sbc_appWidgetIdList.add(sharedpreferences.getInt("id" + i, -1));
                 posListL.add(sharedpreferences.getInt("positionL" + i, -1));
                 posListT.add(sharedpreferences.getInt("positionT" + i, -1));
+
+                rowSizeList.add(sharedpreferences.getInt("rowSize" + i, -1));
+                colSizeList.add(sharedpreferences.getInt("colSize" + i, -1));
+
                 //savedInfoList.add(sharedpreferences.getString("info" + i, null));
             }
         }
@@ -552,10 +581,15 @@ public class MainActivity extends Activity {
             String key_id = "id" + i;
             String key_positionL = "positionL" + i;
             String key_positionT = "positionT" + i;
+            String key_rowSize = "rowSize" + i;
+            String key_colSize = "colSize" + i;
+
 
             editor.putInt(key_id, sbc_appWidgetIdList.get(i));
             editor.putInt(key_positionL, posListL.get(i));
             editor.putInt(key_positionT, posListT.get(i));
+            editor.putInt(key_rowSize, rowSizeList.get(i));
+            editor.putInt(key_colSize, colSizeList.get(i));
         }
         editor.commit();
     }
