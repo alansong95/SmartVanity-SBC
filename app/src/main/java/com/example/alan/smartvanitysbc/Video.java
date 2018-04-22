@@ -25,6 +25,7 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
 
     private static final int RECOVERY_REQUEST = 1;
     private YouTubePlayerView youTubeView;
+    YouTubePlayer gPlayer;
 
     String video = "";
 
@@ -36,6 +37,16 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
     private FirebaseDatabase database;
     String uid;
     int control_notFirst;
+
+    boolean playing;
+
+    int tok2;
+    int volume;
+
+    AudioManager audioManager;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +64,13 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
 
         start = 0;
 
+        playing = true;
+
+        tok2 = 0;
+        volume = 5;
+
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
 
 
         SharedPreferences id_sharedpreferences = getSharedPreferences("id", Context.MODE_PRIVATE);
@@ -65,16 +83,41 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
 
 
         control_notFirst = 0;
+        
 
         controlRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (control_notFirst == 1) {
-                    String control = dataSnapshot.child("controller").getValue().toString();
 
-                    if (control.substring(0, 3).equals("@16")) {
-                        finish();
-                    }
+
+                        String control = dataSnapshot.child("controller").getValue().toString();
+
+                        if (control.substring(0, 3).equals("@16")) {
+                            finish();
+                        } else if (control.substring(0, 3).equals("@15")) {
+//                        if (tok2 % 2 == 0) {
+                            volume = Integer.parseInt(dataSnapshot.child("sound").getValue().toString());
+                            Log.d("DEBUG345", "volume: " + volume);
+
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 10 * volume), 0);
+//                        }
+                            tok2++;
+                        } else if (control.substring(0, 3).equals("@17")) {
+                            if (playing == false) {
+                                playing = true;
+                                gPlayer.play();
+                            } else {
+                                playing = false;
+                                gPlayer.pause();
+                            }
+                        } else if (control.substring(0, 3).equals("@18")) {
+                            gPlayer.seekRelativeMillis(10000);
+                        } else if (control.substring(0, 3).equals("@19")) {
+                            // backward
+                            gPlayer.seekRelativeMillis(-10000);
+                        }
+
                 } else {
                     control_notFirst = 1;
                 }
@@ -95,6 +138,7 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
         player.setPlaybackEventListener(playbackEventListener);
 
         if (!wasRestored) {
+            gPlayer = player;
             player.loadVideo(video);
         }
     }

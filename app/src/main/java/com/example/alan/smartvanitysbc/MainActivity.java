@@ -83,10 +83,6 @@ public class MainActivity extends Activity {
 
     BluetoothAdapter mBluetoothAdapter;
 
-    int volume;
-    int tok2;
-
-    AudioManager audioManager;
 
     int width, height;
 
@@ -165,8 +161,7 @@ public class MainActivity extends Activity {
         controlRef = controlRef.child(uid).child("control");
         control_notFirst = 0;
         tok = 0;
-        tok2 = 0;
-        volume = 5;
+
 
         controlRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -243,15 +238,6 @@ public class MainActivity extends Activity {
 
                         }
                         tok++;
-                    } else if (control.substring(0, 3).equals("@15")) {
-                        if (tok2 % 2 == 0) {
-                            volume = Integer.parseInt(dataSnapshot.child("sound").getValue().toString());
-                            Log.d("DEBUG345", "volume: " + volume);
-
-                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 10 * volume), 0);
-
-                        }
-                        tok2++;
                     }
                 } else {
                     control_notFirst = 1;
@@ -334,7 +320,7 @@ public class MainActivity extends Activity {
         drawMP();
 
 
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -436,7 +422,7 @@ public class MainActivity extends Activity {
             appWidgetIdList.add(Integer.parseInt(dataSnapshot.child("id").child("val"+i).getValue().toString()));
 
 
-            Log.d("load data", dataSnapshot.child("rowSize").child("val"+i).getValue().toString());
+            Log.d("DEBUG33", Integer.parseInt(dataSnapshot.child("rowSize").child("val"+i).getValue().toString()) + "");
             rowSizeList.add(Integer.parseInt(dataSnapshot.child("rowSize").child("val"+i).getValue().toString()));
 
             Log.d("load data", dataSnapshot.child("colSize").child("val"+i).getValue().toString());
@@ -445,6 +431,10 @@ public class MainActivity extends Activity {
             int sbc_appWidgetId = this.mAppWidgetHost.allocateAppWidgetId();
             sbc_appWidgetIdList.add(sbc_appWidgetId);
             Log.d("load data", "SBC ID: " + sbc_appWidgetId);
+        }
+
+        for (int i = 0; i < rowSizeList.size(); i++) {
+            Log.d("DEBUG22", "kk: " +  rowSizeList.get(i));
         }
     }
 
@@ -514,6 +504,9 @@ public class MainActivity extends Activity {
 //            hostView.setAppWidget(appWidgetId, info);
 
             params = new AbsoluteLayout.LayoutParams(rowSizeList.get(i), colSizeList.get(i), posListL.get(i), posListT.get(i));
+
+            Log.d("DEBUG22", "kk: " +  rowSizeList.get(i));
+            Log.d("DEBUG22", "kk: " + colSizeList.get(i));
 
 //            hostView.setId(appWidgetId);
             mainLayout.addView(hostView, i, params);
