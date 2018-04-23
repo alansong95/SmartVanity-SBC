@@ -407,6 +407,8 @@ public class MainActivity extends Activity {
         posListT.clear();
         appWidgetIdList.clear();
         sbc_appWidgetIdList.clear();
+        rowSizeList.clear();
+        colSizeList.clear();
 
         widgetCount = Integer.parseInt(dataSnapshot.child("widget_count").child("val").getValue().toString());
         Log.d("load data", Integer.toString(widgetCount));
@@ -434,7 +436,7 @@ public class MainActivity extends Activity {
         }
 
         for (int i = 0; i < rowSizeList.size(); i++) {
-            Log.d("DEBUG22", "kk: " +  rowSizeList.get(i));
+            Log.d("DEBUG22", "rowsizelist: " +  rowSizeList.get(i));
         }
     }
 
@@ -523,7 +525,7 @@ public class MainActivity extends Activity {
             //intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, appWidgetInfoList.get(i).getProfile());
             startActivityForResult(intent, R.integer.REQUEST_BIND_APPWIDGET);
 
-//            boolean temp = mAppWidgetManager.bindAppWidgetIdIfAllowed(sbc_appWidgetIdList.get(i), providerList.get(i));
+//            boolean temp = mAppWidgetManager.bindAppWidgetIdIfAllowed(sbc_appWidgetIdList.get(i), appWidgetInfoList.get(i).provider);
 //            Log.d("load data", temp + "");
         }
 

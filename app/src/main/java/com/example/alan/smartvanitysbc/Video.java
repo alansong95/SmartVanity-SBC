@@ -83,7 +83,7 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
 
 
         control_notFirst = 0;
-        
+
 
         controlRef.addValueEventListener(new ValueEventListener() {
             @Override
