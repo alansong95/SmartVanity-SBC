@@ -96,26 +96,51 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
                         if (control.substring(0, 3).equals("@16")) {
                             finish();
                         } else if (control.substring(0, 3).equals("@15")) {
-//                        if (tok2 % 2 == 0) {
-                            volume = Integer.parseInt(dataSnapshot.child("sound").getValue().toString());
-                            Log.d("DEBUG345", "volume: " + volume);
+                            if (tok2 % 2 == 1) {
+                                volume = Integer.parseInt(dataSnapshot.child("sound").getValue().toString());
+                                Log.d("DEBUG345", "volume22: " + volume);
 
-                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 10 * volume), 0);
-//                        }
+                                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) (audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 10 * volume), 0);
+                            }
                             tok2++;
                         } else if (control.substring(0, 3).equals("@17")) {
-                            if (playing == false) {
-                                playing = true;
-                                gPlayer.play();
-                            } else {
-                                playing = false;
-                                gPlayer.pause();
+                            try {
+                                if (playing == false) {
+                                    playing = true;
+                                    gPlayer.play();
+                                } else {
+                                    playing = false;
+                                    gPlayer.pause();
+                                }
+                            } catch (Error e) {
+
                             }
+
                         } else if (control.substring(0, 3).equals("@18")) {
-                            gPlayer.seekRelativeMillis(10000);
+                            try {
+                                gPlayer.seekRelativeMillis(10000);
+                            } catch (Error e) {
+
+                            }
                         } else if (control.substring(0, 3).equals("@19")) {
                             // backward
-                            gPlayer.seekRelativeMillis(-10000);
+                            try {
+                                gPlayer.seekRelativeMillis(-10000);
+                            } catch (Error e) {
+
+                            }
+
+                        } else if (control.substring(0, 3).equals("@20")) {
+                            // backward
+                            int jump = Integer.parseInt(dataSnapshot.child("jump").getValue().toString());
+
+                            try {
+                                gPlayer.seekToMillis(gPlayer.getDurationMillis()/20*jump);
+                                Log.d("DEBUG44", "jump: " + gPlayer.getDurationMillis());
+                                Log.d("DEBUG44", "jump: " + gPlayer.getDurationMillis()/20*jump);
+                            } catch (Error e) {
+
+                            }
                         }
 
                 } else {

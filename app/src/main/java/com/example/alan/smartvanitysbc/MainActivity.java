@@ -5,25 +5,18 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
-import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
-import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AbsoluteLayout;
-import android.widget.RelativeLayout;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,7 +26,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
 import java.io.DataOutputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,40 +73,16 @@ public class MainActivity extends Activity {
     int control_notFirst;
     int tok;
 
-    BluetoothAdapter mBluetoothAdapter;
 
 
     int width, height;
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            Log.d("DEBUG123", action);
-
-
-
-            Method method;
-            try {
-                method = mBluetoothAdapter.getClass().getMethod("setScanMode", int.class, int.class);
-                method.invoke(mBluetoothAdapter,BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 0);
-                Log.e("invoke","method invoke successfully");
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-
-            BluetoothConnectionService mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
-        }
-    };
+    boolean last;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         gson = new Gson();
 
@@ -162,6 +130,7 @@ public class MainActivity extends Activity {
         control_notFirst = 0;
         tok = 0;
 
+        last = false;
 
         controlRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -319,7 +288,7 @@ public class MainActivity extends Activity {
 //        startActivityForResult(myIntent, 1234);
         drawMP();
 
-
+        Log.d("DEBUG44", "pika");
 
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -334,28 +303,7 @@ public class MainActivity extends Activity {
 
     }
 
-    public void drawMP() {
-        mView = new OverlayView(this);
-        mView.setWillNotDraw(false);
 
-        wmParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
-                PixelFormat.TRANSLUCENT);
-        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
-        wmParams.x = mView.x;
-        wmParams.y = mView.y;
-        Log.d("DEBUG123", mView.x + "");
-        Log.d("DEBUG123", mView.y + "");
-        //params.setTitle("Cursor");
-        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        wm.addView(mView, wmParams);
-
-        mView.ShowCursor(true);
-    }
 
     public void processStringInput(String stringInput) {
         try {
@@ -468,9 +416,8 @@ public class MainActivity extends Activity {
 //        }
 //    }
 
-    private void configureWidget(Intent data) {
-        Bundle extras = data.getExtras();
-        int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
+    private void configureWidget(int appWidgetId) {
+//        Bundle extras = data.getExtras();
         Log.d("DEBUG123", "pikachu: " + appWidgetId);
         AppWidgetProviderInfo newInfo = mAppWidgetManager.getAppWidgetInfo(appWidgetId);
         if (newInfo.configure != null) {
@@ -482,7 +429,7 @@ public class MainActivity extends Activity {
             Log.d("configureWidget", "null ended");
         } else {
             Log.d("configureWidget", "else started");
-            createWidget(data);
+            createWidget();
             Log.d("configureWidget", "else ended");
         }
         Log.d("configureWidget", "Ended");
@@ -519,14 +466,20 @@ public class MainActivity extends Activity {
     public void bindWidgets() {
         Intent intent;
         for (int i = 0; i < widgetCount; i++) {
-            intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_BIND);
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, sbc_appWidgetIdList.get(i));
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, appWidgetInfoList.get(i).provider);
-            //intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, appWidgetInfoList.get(i).getProfile());
-            startActivityForResult(intent, R.integer.REQUEST_BIND_APPWIDGET);
+//            intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_BIND);
+//            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, sbc_appWidgetIdList.get(i));
+//            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, appWidgetInfoList.get(i).provider);
+//            //intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER_PROFILE, appWidgetInfoList.get(i).getProfile());
+//            startActivityForResult(intent, R.integer.REQUEST_BIND_APPWIDGET);
 
-//            boolean temp = mAppWidgetManager.bindAppWidgetIdIfAllowed(sbc_appWidgetIdList.get(i), appWidgetInfoList.get(i).provider);
+            boolean temp = mAppWidgetManager.bindAppWidgetIdIfAllowed(sbc_appWidgetIdList.get(i), appWidgetInfoList.get(i).provider);
 //            Log.d("load data", temp + "");
+
+            if (i == widgetCount-1) {
+                last = true;
+            }
+
+            configureWidget(sbc_appWidgetIdList.get(i));
         }
 
     }
@@ -538,11 +491,11 @@ public class MainActivity extends Activity {
             if (requestCode == R.integer.REQUEST_CREATE_APPWIDGET) {
                 Log.d("onActivityResult", "REQUEST_CREATE_APPWIDGET");
                 Log.d("pika", "3: ");
-                createWidget(data);
+                createWidget();
                 Log.d("onActivityResult", "REQUEST_CREATE_APPWIDGET END");
             } else if (requestCode == R.integer.REQUEST_BIND_APPWIDGET) {
                 Log.d("bind", "success");
-                configureWidget(data);
+//                configureWidget(data);
             }
         } else if (resultCode == RESULT_CANCELED && data != null) {
             Log.d("onActivityResult", "RESULT_CANCELED");
@@ -588,18 +541,25 @@ public class MainActivity extends Activity {
         editor.commit();
     }
 
-    public void createWidget(Intent data) {
+    public void createWidget() {
         Log.d("createWidget", "started");
         Log.d("DEBUG123", sbc_appWidgetIdList + "");
-        Log.d("DEBUG123", providerList + "");
 
-        putWidget();
+        //fix
+//        putWidget();
+
+        if (last == true) {
+            last = false;
+            putWidget();
+        }
         saveData();
 
 //        loadData();
 //        putWidget();
         //mainLayout.addView(hostView, widgetCount, params);
     }
+
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -622,12 +582,33 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mReceiver, new IntentFilter(BluetoothConnectionService.BROADCAST_FILTER));
     }
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(mReceiver);
         super.onDestroy();
+    }
+
+    public void drawMP() {
+        mView = new OverlayView(this);
+        mView.setWillNotDraw(false);
+
+        wmParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, //will cover status bar as well!!!
+                PixelFormat.TRANSLUCENT);
+        wmParams.gravity = Gravity.TOP | Gravity.LEFT;
+        wmParams.x = mView.x;
+        wmParams.y = mView.y;
+        Log.d("DEBUG123", mView.x + "");
+        Log.d("DEBUG123", mView.y + "");
+        //params.setTitle("Cursor");
+        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.addView(mView, wmParams);
+
+        mView.ShowCursor(true);
     }
 }

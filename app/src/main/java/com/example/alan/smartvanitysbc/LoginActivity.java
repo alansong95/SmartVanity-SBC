@@ -4,11 +4,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.PixelFormat;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.EditText;
@@ -41,6 +44,10 @@ public class LoginActivity extends AppCompatActivity {
     Button mSignInButton;
 
     String uid;
+
+    OverlayView mView;
+    WindowManager wm;
+    WindowManager.LayoutParams wmParams;
 
 //    private BluetoothAdapter mBluetoothAdapter;
 //    BluetoothConnectionService mBluetoothConnection;
@@ -77,6 +84,9 @@ public class LoginActivity extends AppCompatActivity {
 //
 //        mBluetoothConnection = new BluetoothConnectionService(LoginActivity.this);
 //        FragmentManager
+
+
+
     }
 
     @Override
@@ -266,4 +276,6 @@ public class LoginActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
     }
+
+
 }
