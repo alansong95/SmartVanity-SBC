@@ -47,9 +47,9 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
 
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("DEBUG66", "STARTED");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.video);
 
@@ -104,43 +104,53 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
                             }
                             tok2++;
                         } else if (control.substring(0, 3).equals("@17")) {
-                            try {
-                                if (playing == false) {
-                                    playing = true;
-                                    gPlayer.play();
-                                } else {
-                                    playing = false;
-                                    gPlayer.pause();
+
+                            if (gPlayer != null) {
+                                try {
+                                    if (playing == false) {
+                                        playing = true;
+                                        gPlayer.play();
+                                    } else {
+                                        playing = false;
+                                        gPlayer.pause();
+                                    }
+                                } catch (IllegalStateException e) {
+
                                 }
-                            } catch (Error e) {
-
                             }
-
                         } else if (control.substring(0, 3).equals("@18")) {
-                            try {
-                                gPlayer.seekRelativeMillis(10000);
-                            } catch (Error e) {
-
+                            if (gPlayer != null) {
+                                try {
+                                    gPlayer.seekRelativeMillis(10000);
+                                } catch (IllegalStateException e) {
+                                    //initiailize
+                                }
                             }
                         } else if (control.substring(0, 3).equals("@19")) {
                             // backward
-                            try {
-                                gPlayer.seekRelativeMillis(-10000);
-                            } catch (Error e) {
-
+                            if (gPlayer != null) {
+                                try {
+                                    gPlayer.seekRelativeMillis(-10000);
+                                } catch (IllegalStateException e) {
+                                    //initiailize
+                                }
                             }
 
                         } else if (control.substring(0, 3).equals("@20")) {
                             // backward
                             int jump = Integer.parseInt(dataSnapshot.child("jump").getValue().toString());
 
-                            try {
-                                gPlayer.seekToMillis(gPlayer.getDurationMillis()/20*jump);
-                                Log.d("DEBUG44", "jump: " + gPlayer.getDurationMillis());
-                                Log.d("DEBUG44", "jump: " + gPlayer.getDurationMillis()/20*jump);
-                            } catch (Error e) {
+                            if (gPlayer != null) {
+                                try {
+                                    gPlayer.seekToMillis(gPlayer.getDurationMillis()/20*jump);
+                                    Log.d("DEBUG44", "jump: " + gPlayer.getDurationMillis());
+                                    Log.d("DEBUG44", "jump: " + gPlayer.getDurationMillis()/20*jump);
+                                } catch (IllegalStateException e) {
 
+                                }
                             }
+
+
                         }
 
                 } else {
@@ -162,14 +172,22 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
         player.setPlayerStateChangeListener(playerStateChangeListener);
         player.setPlaybackEventListener(playbackEventListener);
 
-        if (!wasRestored) {
-            gPlayer = player;
-            player.loadVideo(video);
-        }
+//        if (!wasRestored) {
+//            gPlayer = player;
+//            player.loadVideo(video);
+//        }
+        gPlayer = player;
+        gPlayer.loadVideo(video);
+
+        Log.d("DEBUG55", "onInitializationSuccess");
+        Log.d("DEBUG55", "player:" + player);
+        Log.d("DEBUG55", "gPlayer:" + gPlayer);
+        Log.d("DEBUG55", "wasRestored:" + wasRestored);
     }
 
     @Override
     public void onInitializationFailure(Provider provider, YouTubeInitializationResult errorReason) {
+        Log.d("DEBUG55", "onInitializationFailure");
         if (errorReason.isUserRecoverableError()) {
             errorReason.getErrorDialog(this, RECOVERY_REQUEST).show();
         } else {
@@ -180,6 +198,7 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("DEBUG55", "onActivityResult");
         if (requestCode == RECOVERY_REQUEST) {
             // Retry initialization if user performed a recovery action
             getYouTubePlayerProvider().initialize(Config.YOUTUBE_API_KEY, this);
@@ -266,5 +285,16 @@ public class Video extends YouTubeBaseActivity implements YouTubePlayer.OnInitia
         public void onError(YouTubePlayer.ErrorReason errorReason) {
             // Called when an error occurs.
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d("DEBUG55", "onDestroy");
+        if (gPlayer != null) {
+            Log.d("DEBUG55", "onDestroy gPlayer!=null");
+            gPlayer.release();
+//            gPlayer = null;
+        }
+        super.onDestroy();
     }
 }
